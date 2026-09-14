@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/*
+
+# Environment
+.env
+
+# Playwrightの永続コンテキスト（実雀魂アカウントのログインセッションを含むため厳禁）
+data/user_data_dir/
+data/*
+!data/.gitkeep
+
+# 実スクリーンショットから手動で切り出したアイコンテンプレート
+assets/templates/*
+!assets/templates/.gitkeep
+
+# 手動ブートストラップで撮影する生スクリーンショット
+assets/screenshots/
