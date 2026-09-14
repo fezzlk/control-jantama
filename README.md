@@ -20,9 +20,12 @@ cp .env.example .env
 
 このPoCは共有アイコン等をテンプレートマッチングで検出する。まだ`assets/templates/`に画像が無いため、以下の手順で一度だけ作成する。
 
-1. `python -m scripts.capture_reference_screenshot` を実行し、開いたブラウザで雀魂にログイン・牌譜一覧画面まで手動で移動してから Enter を押す。
-2. `assets/screenshots/reference.png` が保存されるので、任意の画像編集ツールで開き、共有アイコン・共有ダイアログの目印になる要素（・必要ならコピーボタン）を切り出す。
-3. それぞれ `assets/templates/share_icon.png`・`assets/templates/dialog_marker.png`（・`assets/templates/copy_button.png`）として保存する。
+1. `python -m scripts.capture_reference_screenshot` を実行する。ブラウザが開いたら雀魂へ手動でログインする。
+2. 撮影したい画面（例: 牌譜一覧画面）まで操作したらターミナルで Enter を押す → `assets/screenshots/reference_1.png` が保存される。
+   - ブラウザは閉じないので、続けて共有ボタンを押してダイアログを表示させ、再度ターミナルで Enter を押す → `assets/screenshots/reference_2.png` が保存される。
+   - 必要な画面を撮り終えるまで、この「操作してEnter」を何度でも繰り返せる。
+3. 終わったらターミナルで `q` を入力してEnterを押すとブラウザが閉じる。
+4. 保存された各`reference_N.png`を任意の画像編集ツールで開き、共有アイコン・共有ダイアログの目印になる要素（・必要ならコピーボタン）を切り出し、それぞれ `assets/templates/share_icon.png`・`assets/templates/dialog_marker.png`（・`assets/templates/copy_button.png`）として保存する。
 
 これらの画像は実際の雀魂画面のスクリーンショットに由来するため`.gitignore`でコミット対象外にしている。将来的にはこの手動ステップをtrainer（画面記録UI）で置き換える予定。
 

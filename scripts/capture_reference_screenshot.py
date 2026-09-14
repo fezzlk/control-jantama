@@ -1,8 +1,12 @@
 """手動ブートストラップ用スクリプト。
 
 テンプレート画像（共有アイコン・ダイアログ目印・コピーボタン）を用意するために、
-一度だけ実行してブラウザで雀魂にログイン・画面遷移した後の全体スクリーンショットを保存する。
-保存された assets/screenshots/reference.png を任意の画像編集ツールで開き、
+同じブラウザセッション内で何度でもスクリーンショットを撮影できる。
+例: 1回目は牌譜一覧画面（共有アイコン用）、2回目は共有ボタンを押した後の
+ダイアログ表示画面（ダイアログ目印・コピーボタン用）。
+
+Enterのたびにその時点の画面を1枚保存し、`q` + Enterで終了する。
+保存された assets/screenshots/reference_N.png を任意の画像編集ツールで開き、
 必要なアイコンを切り出して assets/templates/ 配下に保存すること
 （例: share_icon.png, dialog_marker.png, copy_button.png）。
 
@@ -13,21 +17,33 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from control_jantama.browser import get_or_create_page, launch_context, wait_for_human_navigation
+from control_jantama.browser import get_or_create_page, launch_context
 
-OUTPUT_PATH = Path("assets/screenshots/reference.png")
+OUTPUT_DIR = Path("assets/screenshots")
 
 
 def main() -> None:
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     with launch_context() as context:
         page = get_or_create_page(context)
-        wait_for_human_navigation(
-            "ブラウザが開きました。テンプレートを作りたい画面まで手動で移動したら Enter を押してください。"
-        )
-        page.screenshot(path=str(OUTPUT_PATH))
-        print(f"保存しました: {OUTPUT_PATH}")
+
+        print("ブラウザが開きました。雀魂へ手動でログインしてください。")
+        print("スクリーンショットを撮りたい画面（一覧画面、ダイアログ表示中など）まで")
+        print("操作したら Enter を押してください。何度でも撮影できます。")
+        print("撮影を終えてブラウザを閉じる場合は q を入力して Enter を押してください。")
+
+        count = 0
+        while True:
+            answer = input("> ")
+            if answer.strip().lower() == "q":
+                break
+            count += 1
+            path = OUTPUT_DIR / f"reference_{count}.png"
+            page.screenshot(path=str(path))
+            print(f"保存しました: {path}")
+
+        print(f"終了します（{count}枚保存）。")
 
 
 if __name__ == "__main__":
