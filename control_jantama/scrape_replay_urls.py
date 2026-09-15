@@ -149,6 +149,7 @@ def run_capture_loop(page: Page) -> tuple[int, int, int, float]:
             total_px=settings.scroll_step_px,
             tick_px=settings.scroll_tick_px,
             tick_interval_ms=settings.scroll_tick_interval_ms,
+            move_to=(settings.viewport_width // 2, settings.viewport_height // 2),
         )
         after_scroll_screenshot = wait_for_stable_screenshot(
             page,

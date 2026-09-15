@@ -44,13 +44,27 @@ def wait_for_human_navigation(prompt: str) -> None:
     input()
 
 
-def scroll_by(page: Page, total_px: int, tick_px: int, tick_interval_ms: int) -> None:
+def scroll_by(
+    page: Page,
+    total_px: int,
+    tick_px: int,
+    tick_interval_ms: int,
+    move_to: tuple[int, int] | None = None,
+) -> None:
     """総量total_pxを、tick_pxずつの小刻みなホイールイベントに分けて送る。
 
     実機確認(2026-09-15): 雀魂側は1回の大きなwheelイベント（例: deltaY=600）を
     そのままの量では反映せず、ごく僅かしかスクロールしない。実際のマウスホイールの
     1ノッチに近い小さな量を連続で送ることで、意図した総量に近づける。
+
+    move_to: Playwrightの仮想マウスカーソルはmouse.move/clickしない限り直前の位置に
+    残り続けるため、明示的に指定しないと「直前に処理した行の共有アイコン」等の
+    成り行きの座標でwheelイベントが発火してしまう。一覧本体の上で確実にスクロール
+    させるため、呼び出し側から一覧中央あたりの座標を渡す。
     """
+    if move_to is not None:
+        page.mouse.move(*move_to)
+
     remaining = total_px
     while remaining > 0:
         delta = min(tick_px, remaining)
