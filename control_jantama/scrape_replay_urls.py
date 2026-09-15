@@ -17,7 +17,13 @@ from urllib.parse import urlparse
 from playwright.sync_api import Page
 
 from control_jantama.action.clipboard import read_clipboard_text
-from control_jantama.browser import get_or_create_page, launch_context, wait_for_human_navigation, wait_for_stable_screenshot
+from control_jantama.browser import (
+    get_or_create_page,
+    launch_context,
+    scroll_by,
+    wait_for_human_navigation,
+    wait_for_stable_screenshot,
+)
 from control_jantama.config import settings
 from control_jantama.perception.screen_diff import images_are_similar
 from control_jantama.perception.template_match import Match, decode_image, find_all_templates, find_template, load_template
@@ -138,7 +144,12 @@ def run_capture_loop(page: Page) -> tuple[int, int, int, float]:
             break
 
         before_scroll_screenshot = page.screenshot()
-        page.mouse.wheel(0, settings.scroll_step_px)
+        scroll_by(
+            page,
+            total_px=settings.scroll_step_px,
+            tick_px=settings.scroll_tick_px,
+            tick_interval_ms=settings.scroll_tick_interval_ms,
+        )
         after_scroll_screenshot = wait_for_stable_screenshot(
             page,
             poll_interval_ms=settings.scroll_settle_poll_interval_ms,

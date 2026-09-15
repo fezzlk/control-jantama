@@ -44,6 +44,21 @@ def wait_for_human_navigation(prompt: str) -> None:
     input()
 
 
+def scroll_by(page: Page, total_px: int, tick_px: int, tick_interval_ms: int) -> None:
+    """総量total_pxを、tick_pxずつの小刻みなホイールイベントに分けて送る。
+
+    実機確認(2026-09-15): 雀魂側は1回の大きなwheelイベント（例: deltaY=600）を
+    そのままの量では反映せず、ごく僅かしかスクロールしない。実際のマウスホイールの
+    1ノッチに近い小さな量を連続で送ることで、意図した総量に近づける。
+    """
+    remaining = total_px
+    while remaining > 0:
+        delta = min(tick_px, remaining)
+        page.mouse.wheel(0, delta)
+        page.wait_for_timeout(tick_interval_ms)
+        remaining -= delta
+
+
 def wait_for_stable_screenshot(
     page: Page,
     poll_interval_ms: int,
