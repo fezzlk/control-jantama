@@ -9,6 +9,7 @@ OCR、画像LLMエスカレーション、Docker化。詳細はREADMEを参照�
 
 from __future__ import annotations
 
+import re
 import sys
 from urllib.parse import urlparse
 
@@ -19,6 +20,15 @@ from control_jantama.perception.template_match import decode_image, find_templat
 from control_jantama.storage.replay_urls import insert_replay_url
 
 ROW_INDEX = 0  # このPoCはスクロールなし・先頭行のみを対象とする
+
+# クリップボードは「雀魂牌譜:https://...」のように説明文付きでコピーされるため、
+# 中に含まれるURL部分だけを抜き出す。
+_URL_PATTERN = re.compile(r"https?://\S+")
+
+
+def extract_url(text: str) -> str | None:
+    match = _URL_PATTERN.search(text)
+    return match.group(0) if match else None
 
 
 def is_valid_replay_url(url: str) -> bool:
@@ -85,10 +95,11 @@ def main() -> None:
             copy_x, copy_y = copy_match.center
             page.mouse.click(copy_x, copy_y)
 
-        url = read_clipboard_text(page)
+        clipboard_text = read_clipboard_text(page)
+        url = extract_url(clipboard_text)
 
-        if not is_valid_replay_url(url):
-            fail(f"クリップボードの内容が有効なURLとして検証できませんでした: {url!r}")
+        if url is None or not is_valid_replay_url(url):
+            fail(f"クリップボードの内容から有効なURLを抽出できませんでした: {clipboard_text!r}")
             return
 
         row_id = insert_replay_url(settings.db_path, url=url, row_index=ROW_INDEX, success=True)

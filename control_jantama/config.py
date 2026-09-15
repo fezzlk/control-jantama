@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     copy_button_template: str | None = None
 
     match_threshold: float = 0.85
-    url_host_allowlist: str = "maj-soul.com,yo-star.com"
+    url_host_allowlist: str = "mahjongsoul.com,maj-soul.com,yo-star.com"
     dialog_appear_timeout_seconds: float = 10.0
 
     viewport_width: int = 1280
