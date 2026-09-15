@@ -4,7 +4,7 @@
 
 ## 現状
 
-最小PoC: 雀魂の牌譜一覧画面の先頭1行から共有URLを1件取得し、SQLiteへ記録する。
+雀魂の牌譜一覧画面をスクロールしながら、表示されている各行の共有URLを取得し、SQLiteへ記録する（重複URLはDB側で自動的にスキップ）。
 
 ## セットアップ
 
@@ -32,15 +32,17 @@ cp .env.example .env
 ## 実行
 
 ```bash
-python -m control_jantama.poc_scrape_one_replay_url
+python -m control_jantama.scrape_replay_urls
 ```
 
-ブラウザが開くので、雀魂へ手動でログインし牌譜一覧画面を表示してから Enter を押す。以降は自動で共有アイコンのクリック→ダイアログ出現確認→URL取得→SQLite保存→ダイアログを閉じる、まで実行される。
+ブラウザが開くので、雀魂へ手動でログインし牌譜一覧画面を表示してから Enter を押す。以降は自動で、画面内に表示されている各行の共有アイコンをクリック→ダイアログ出現確認→URL取得→SQLite保存→ダイアログを閉じる、を繰り返し、スクロールして雀魂側の遅延ロードを待ちながら次の行へ進む。スクロールしても新しい行が現れなくなったら一覧末尾に到達したとみなして終了する（`CONTROL_JANTAMA_MAX_SCROLL_STEPS`でスクロール回数の上限も設定可能）。
 
-成功時は以下のように表示される:
+既に記録済みのURLはSQLiteのUNIQUE制約により自動的にスキップされるため、同じ行を複数回取得しても重複保存されない。
+
+実行中は行ごとに取得結果と所要時間が表示され（例: `row 1: saved https://... (2.3s)`）、成功時は最後に合計時間・平均時間つきのサマリが表示される:
 
 ```
-SUCCESS: retrieved <url>, saved to data/replay_urls.sqlite3 (row id 1)
+SUCCESS: saved 12 new url(s), skipped 3 duplicate(s) across 5 scroll step(s) in 42.1s (avg 2.8s/row over 15 row(s)), saved to data/replay_urls.sqlite3
 ```
 
 確認:
@@ -57,8 +59,7 @@ pytest
 
 ## このPoCで対象外にしていること（意図的な先送り）
 
-- スクロール・ページネーション（複数行・複数画面への対応）
-- 重複排除・再開チェックポイント
+- 中断・再開チェックポイント
 - 宣言的YAML workflowエンジン
 - OCRによるURL抽出（クリップボード読み取りを優先する設計のため）
 - 未知画面への画像LLMエスカレーション

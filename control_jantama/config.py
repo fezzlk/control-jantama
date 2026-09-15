@@ -29,6 +29,14 @@ class Settings(BaseSettings):
 
     start_url: str | None = None
 
+    scroll_step_px: int = 600
+    max_scroll_steps: int | None = None
+    scroll_settle_poll_interval_ms: int = 300
+    scroll_settle_stable_checks: int = 2
+    scroll_settle_timeout_seconds: float = 5.0
+    screen_similarity_threshold: float = 0.98
+    row_match_min_distance_px: int = 20
+
     def template_path(self, filename: str) -> Path:
         return self.templates_dir / filename
 

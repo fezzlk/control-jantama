@@ -1,4 +1,4 @@
-from control_jantama.poc_scrape_one_replay_url import extract_url, is_valid_replay_url
+from control_jantama.scrape_replay_urls import extract_url, is_valid_replay_url
 
 
 def test_extract_url_strips_japanese_label_prefix():

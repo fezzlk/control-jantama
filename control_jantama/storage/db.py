@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS replay_urls (
     success      INTEGER NOT NULL,
     retrieved_at TEXT NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_replay_urls_url ON replay_urls(url);
 """
 
 

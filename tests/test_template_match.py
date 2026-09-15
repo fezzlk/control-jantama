@@ -1,6 +1,6 @@
 import numpy as np
 
-from control_jantama.perception.template_match import find_template
+from control_jantama.perception.template_match import find_all_templates, find_template
 
 
 def _checkerboard_patch(size: int = 20) -> np.ndarray:
@@ -41,3 +41,25 @@ def test_find_template_returns_none_when_absent():
     match = find_template(canvas, patch, threshold=0.9)
 
     assert match is None
+
+
+def test_find_all_templates_locates_multiple_rows_top_to_bottom():
+    canvas = _gradient_canvas()
+    patch = _checkerboard_patch()
+    canvas[10:30, 100:120] = patch
+    canvas[80:100, 100:120] = patch
+    canvas[150:170, 100:120] = patch
+
+    matches = find_all_templates(canvas, patch, threshold=0.9, min_distance_px=20)
+
+    assert [match.y for match in matches] == [10, 80, 150]
+
+
+def test_find_all_templates_suppresses_near_duplicate_peaks():
+    canvas = _gradient_canvas()
+    patch = _checkerboard_patch()
+    canvas[50:70, 100:120] = patch
+
+    matches = find_all_templates(canvas, patch, threshold=0.9, min_distance_px=20)
+
+    assert len(matches) == 1
