@@ -1,6 +1,6 @@
 import numpy as np
 
-from control_jantama.perception.template_match import find_all_templates, find_template
+from control_jantama.perception.template_match import Match, estimate_scroll_distance, find_all_templates, find_template
 
 
 def _checkerboard_patch(size: int = 20) -> np.ndarray:
@@ -63,3 +63,29 @@ def test_find_all_templates_suppresses_near_duplicate_peaks():
     matches = find_all_templates(canvas, patch, threshold=0.9, min_distance_px=20)
 
     assert len(matches) == 1
+
+
+def _match_at(y: int) -> Match:
+    return Match(x=100, y=y, width=20, height=20, score=1.0)
+
+
+def test_estimate_scroll_distance_uses_detected_row_spacing():
+    # 行間隔100px、5行検出、overlap_rows=1なら残り4行ぶん進める
+    matches = [_match_at(y) for y in (0, 100, 200, 300, 400)]
+
+    distance = estimate_scroll_distance(matches, fallback_px=999, overlap_rows=1)
+
+    assert distance == 400
+
+
+def test_estimate_scroll_distance_falls_back_when_fewer_than_two_matches():
+    assert estimate_scroll_distance([], fallback_px=999, overlap_rows=1) == 999
+    assert estimate_scroll_distance([_match_at(50)], fallback_px=999, overlap_rows=1) == 999
+
+
+def test_estimate_scroll_distance_never_returns_zero_or_negative():
+    matches = [_match_at(y) for y in (0, 10)]
+
+    distance = estimate_scroll_distance(matches, fallback_px=999, overlap_rows=5)
+
+    assert distance >= 1

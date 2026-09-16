@@ -26,7 +26,14 @@ from control_jantama.browser import (
 )
 from control_jantama.config import settings
 from control_jantama.perception.screen_diff import images_are_similar
-from control_jantama.perception.template_match import Match, decode_image, find_all_templates, find_template, load_template
+from control_jantama.perception.template_match import (
+    Match,
+    decode_image,
+    estimate_scroll_distance,
+    find_all_templates,
+    find_template,
+    load_template,
+)
 from control_jantama.storage.replay_urls import insert_replay_url
 
 # クリップボードは「雀魂牌譜:https://...」のように説明文付きでコピーされるため、
@@ -143,10 +150,16 @@ def run_capture_loop(page: Page) -> tuple[int, int, int, float]:
         if settings.max_scroll_steps is not None and scroll_count >= settings.max_scroll_steps:
             break
 
+        scroll_target_px = estimate_scroll_distance(
+            matches,
+            fallback_px=settings.scroll_step_px,
+            overlap_rows=settings.scroll_overlap_rows,
+        )
+
         before_scroll_screenshot = page.screenshot()
         scroll_by(
             page,
-            total_px=settings.scroll_step_px,
+            total_px=scroll_target_px,
             tick_px=settings.scroll_tick_px,
             tick_interval_ms=settings.scroll_tick_interval_ms,
             move_to=(settings.viewport_width // 2, settings.viewport_height // 2),

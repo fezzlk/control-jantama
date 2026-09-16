@@ -77,6 +77,24 @@ def find_all_templates(
     return sorted(matches, key=lambda match: match.y)
 
 
+def estimate_scroll_distance(matches: list[Match], fallback_px: int, overlap_rows: int = 1) -> int:
+    """検出された行(Match)のy座標間隔から、次にスクロールすべき量(px)を推定する。
+
+    固定pxで決め打ちすると実際の行の高さとズレて重複取得が多発するため、
+    その画面で検出できた行数と間隔から「画面いっぱいに近い量」を逆算する。
+    境界の行を取りこぼさないようoverlap_rows行ぶんは重複させて進める。
+    行の高さを計算するには最低2行の検出が必要なため、それに満たない場合は
+    未知状態を推測で埋めずfallback_pxを返す。
+    """
+    if len(matches) < 2:
+        return fallback_px
+
+    y_positions = sorted(match.y for match in matches)
+    row_height = (y_positions[-1] - y_positions[0]) / (len(y_positions) - 1)
+    rows_to_advance = max(len(matches) - overlap_rows, 1)
+    return max(int(row_height * rows_to_advance), 1)
+
+
 def decode_image(image_bytes: bytes) -> np.ndarray:
     array = np.frombuffer(image_bytes, dtype=np.uint8)
     image = cv2.imdecode(array, cv2.IMREAD_COLOR)

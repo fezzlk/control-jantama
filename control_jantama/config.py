@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     scroll_step_px: int = 2000
     scroll_tick_px: int = 120
     scroll_tick_interval_ms: int = 30
+    scroll_overlap_rows: int = 1
     max_scroll_steps: int | None = None
     scroll_settle_poll_interval_ms: int = 300
     scroll_settle_stable_checks: int = 2
