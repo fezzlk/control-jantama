@@ -6,11 +6,23 @@
 
 雀魂の牌譜一覧画面をスクロールしながら、表示されている各行の共有URLを取得し、SQLiteへ記録する（重複URLはDB側で自動的にスキップ）。
 
+## 動作環境
+
+- **OS**: macOS / Windows / Linux（Playwright Chromiumが動作する環境）を想定。**動作確認は現時点でmacOSのみ**。他OSでは以下の点で追加対応が必要になる可能性がある。
+  - **Linux**: Chromium実行に必要な共有ライブラリが不足している場合、`playwright install-deps`（または各ディストリのパッケージマネージャでの手動導入）が別途必要。
+  - **Windows**: venvの有効化コマンドが異なる（下記セットアップ参照）。DB確認に使う`sqlite3`コマンドは標準搭載されていないため、代わりにPythonの`sqlite3`モジュール等で読み替える。
+- **ディスプレイ必須**: ブラウザを`headless=False`（画面表示あり）で起動し、雀魂へのログイン・CAPTCHA対応を人間が目視で行う設計のため、実際に画面を表示できる環境が必要。SSH接続のみのヘッドレスサーバーやディスプレイなしのコンテナでは、Xサーバー等を別途用意しない限り動作しない。
+- **Python**: 3.11系（`.python-version`で固定）。`python3.11`コマンドが無い環境ではpyenv等で用意するか、セットアップのコマンドをその環境のPython 3.11実行コマンドに読み替える。
+- **画面倍率・解像度**: OS側のディスプレイ拡大設定（Retina/HiDPI等）はコード側で`device_scale_factor=1`固定にして吸収しているため影響しない。ブラウザウィンドウは固定1280x800を使うため、モニタ解像度がそれを下回ると表示が乱れる可能性がある。
+- **雀魂アカウント**: 実行者自身のアカウントで手動ログインする前提。アカウント貸与や自動ログインは想定していない（規約・アカウント制限リスクがあるため未対応）。
+- **費用**: 追加の有料API等は使わない。初回`playwright install chromium`でbrowser本体（無料・100〜300MB程度）をネットワーク経由でダウンロードする。
+- **テンプレート画像の環境依存**: 共有アイコン等の識別に使う画像は各利用者が自分の環境で手動作成する前提（下記「テンプレート画像の準備」）ため、OSやディスプレイが違っても仕組み上は個別対応できる。ただしGPU・ブラウザのレンダリング差で見た目が微妙に変わった場合、既定の一致閾値（`CONTROL_JANTAMA_MATCH_THRESHOLD=0.85`）で検出できない可能性は未検証。閾値を下げる、テンプレート画像を撮り直す等で調整する。
+
 ## セットアップ
 
 ```bash
 python3.11 -m venv venv
-source venv/bin/activate
+source venv/bin/activate   # Windowsの場合: venv\Scripts\Activate.ps1 (PowerShell) または venv\Scripts\activate.bat (コマンドプロンプト)
 pip install -r requirements.txt
 playwright install chromium
 cp .env.example .env
@@ -50,6 +62,8 @@ SUCCESS: saved 12 new url(s), skipped 3 duplicate(s) across 5 scroll step(s) in 
 ```bash
 sqlite3 data/replay_urls.sqlite3 "SELECT * FROM replay_urls;"
 ```
+
+（`sqlite3`コマンドが無い場合は`python -c "import sqlite3; print(sqlite3.connect('data/replay_urls.sqlite3').execute('SELECT * FROM replay_urls').fetchall())"`でも確認できる）
 
 ## テスト
 
