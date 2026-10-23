@@ -29,11 +29,17 @@ class Settings(BaseSettings):
 
     start_url: str | None = None
 
+    match_type: str | None = None
+
+    scroll_method: str = "wheel"
+    pre_scroll_settle_ms: int = 400
+    scroll_amount_multiplier: float = 1.0
     scroll_step_px: int = 2000
     scroll_tick_px: int = 120
     scroll_tick_interval_ms: int = 30
     scroll_overlap_rows: int = 1
     max_scroll_steps: int | None = None
+    scroll_no_change_retry_limit: int = 3
     scroll_settle_poll_interval_ms: int = 300
     scroll_settle_stable_checks: int = 2
     scroll_settle_timeout_seconds: float = 5.0

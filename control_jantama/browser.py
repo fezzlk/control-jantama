@@ -73,6 +73,48 @@ def scroll_by(
         remaining -= delta
 
 
+def drag_scroll_by(
+    page: Page,
+    total_px: int,
+    origin: tuple[int, int],
+    drag_step_px: int = 300,
+    move_steps: int = 10,
+    step_delay_ms: int = 15,
+    between_drags_ms: int = 100,
+    settle_before_release_ms: int = 150,
+) -> None:
+    """マウスドラッグ（押す→上へ動かす→離す）でスクロールする。
+
+    wheelイベントの反映が不安定な画面向けの代替手段(2026-09-21、友人戦タブで
+    wheelがランダムに効かない事象への対策として追加)。一覧上の何もない場所
+    （共有アイコン等のボタンに重ならない座標）を起点に、タッチスワイプに近い
+    押す→上へ動かす→離す、を繰り返す。1回のドラッグで画面外へ出ないよう
+    drag_step_pxずつに分けて複数回に分けて実行する。
+
+    実機確認(2026-09-21): 雀魂の一覧は慣性スクロール（離す直前の速度が乗って
+    追加でスクロールし続ける）が入っているため、動かし終えた直後に離すと
+    想定より大きく動いてしまう。離す前にsettle_before_release_msだけ同じ位置に
+    留まり、速度をゼロに近づけてから離すことでこれを抑える。
+    """
+    origin_x, origin_y = origin
+    remaining = total_px
+
+    while remaining > 0:
+        drag_px = min(drag_step_px, remaining)
+        page.mouse.move(origin_x, origin_y)
+        page.mouse.down()
+        target_y = origin_y
+        for step in range(1, move_steps + 1):
+            target_y = origin_y - int(drag_px * step / move_steps)
+            page.mouse.move(origin_x, target_y)
+            page.wait_for_timeout(step_delay_ms)
+        page.mouse.move(origin_x, target_y)
+        page.wait_for_timeout(settle_before_release_ms)
+        page.mouse.up()
+        page.wait_for_timeout(between_drags_ms)
+        remaining -= drag_px
+
+
 def wait_for_stable_screenshot(
     page: Page,
     poll_interval_ms: int,

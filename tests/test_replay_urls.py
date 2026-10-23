@@ -20,3 +20,39 @@ def test_insert_replay_url_skips_duplicate_url(tmp_path: Path):
     finally:
         connection.close()
     assert count == 1
+
+
+def test_insert_replay_url_backfills_match_type_on_duplicate(tmp_path: Path):
+    db_path = tmp_path / "replay_urls.sqlite3"
+    url = "https://game.mahjongsoul.com/?paipu=abc"
+
+    insert_replay_url(db_path, url=url, row_index=0, success=True)
+    second_id = insert_replay_url(db_path, url=url, row_index=1, success=True, match_type="友人戦")
+
+    assert second_id is None
+
+    connection = sqlite3.connect(db_path)
+    try:
+        (match_type,) = connection.execute(
+            "SELECT match_type FROM replay_urls WHERE url = ?", (url,)
+        ).fetchone()
+    finally:
+        connection.close()
+    assert match_type == "友人戦"
+
+
+def test_insert_replay_url_does_not_overwrite_existing_match_type(tmp_path: Path):
+    db_path = tmp_path / "replay_urls.sqlite3"
+    url = "https://game.mahjongsoul.com/?paipu=abc"
+
+    insert_replay_url(db_path, url=url, row_index=0, success=True, match_type="友人戦")
+    insert_replay_url(db_path, url=url, row_index=1, success=True, match_type="段位戦")
+
+    connection = sqlite3.connect(db_path)
+    try:
+        (match_type,) = connection.execute(
+            "SELECT match_type FROM replay_urls WHERE url = ?", (url,)
+        ).fetchone()
+    finally:
+        connection.close()
+    assert match_type == "友人戦"

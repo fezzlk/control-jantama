@@ -18,6 +18,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from control_jantama.browser import get_or_create_page, launch_context
+from control_jantama.config import settings
 
 OUTPUT_DIR = Path("assets/screenshots")
 
@@ -27,6 +28,9 @@ def main() -> None:
 
     with launch_context() as context:
         page = get_or_create_page(context)
+
+        if settings.start_url:
+            page.goto(settings.start_url)
 
         print("ブラウザが開きました。雀魂へ手動でログインしてください。")
         print("スクリーンショットを撮りたい画面（一覧画面、ダイアログ表示中など）まで")
