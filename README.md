@@ -79,6 +79,18 @@ sqlite3 data/replay_urls.sqlite3 "SELECT * FROM replay_urls;"
 
 （`sqlite3`コマンドが無い場合は`python -c "import sqlite3; print(sqlite3.connect('data/replay_urls.sqlite3').execute('SELECT * FROM replay_urls').fetchall())"`でも確認できる）
 
+## headless描画の検証（FEZ-190）
+
+headless自動実行へ移る前の確認用。headless Chromium（既定のGLと`--use-gl=swiftshader`の2通り）で雀魂を開き、スクリーンショット・WebGLのレンダラー名・画像が真っ黒や単色でないかを`summary.json`に記録する。
+
+```bash
+venv/bin/python -m scripts.verify_headless_rendering --output-dir <出力先>
+```
+
+- `--user-data-dir`を省略すると空の一時プロファイルで起動する（ログイン画面まで。アカウントには触れない）。ログインセッションの引き継ぎも確認したい場合は、`data/user_data_dir`をコピーしたディレクトリを渡す（`data/user_data_dir`を直接渡すとエラーにする）。
+- 参考画像（`assets/screenshots/reference.png`）・テンプレート画像との比較値は、それらがある本体のチェックアウトで実行したときだけ記録される。
+- 雀魂のログイン画面は花びらのアニメーションが続くため、画面は「安定」と判定されず、`--timeout-seconds`（既定120秒）まで待ってから撮影する。
+
 ## テスト
 
 ```bash
